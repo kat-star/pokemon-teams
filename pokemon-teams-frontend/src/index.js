@@ -1,11 +1,14 @@
-const BASE_URL = "http://localhost:3000"
-const TRAINERS_URL = `${BASE_URL}/trainers`
-const POKEMONS_URL = `${BASE_URL}/pokemons`
+const BASE_URL = "http://localhost:3000";
+const TRAINERS_URL = `${BASE_URL}/trainers`;
+const POKEMONS_URL = `${BASE_URL}/pokemons`;
 
-fetchTrainers()
-listenForAddPokemon()
-listenForReleasePokemon()
-// let allTrainers;
+//immediately invoked function expression, used to prevent functions hanging out unnecessarily in the global scope. JS convention This prevents accessing variables within the IIFE idiom as well as polluting the global scope.
+
+(function() {
+  fetchTrainers();
+  listenForAddPokemon();
+  listenForReleasePokemon();
+})();
 
 function trainerContainer() {
   return document.querySelector('main');
@@ -16,6 +19,7 @@ function renderTrainerCard(trainer) {
     <div class="card" data-id="${trainer.id}"><p>${trainer.name}</p>
       <button data-trainer-id="${trainer.id}">Add Pokemon</button>
     <ul>
+      ${ trainer.pokemons.map(pokemon => renderPokemon(pokemon)).join('')}
     </ul>
   </div>`;
 }
@@ -27,20 +31,20 @@ function renderPokemon(pokemon) {
 }
 
 function fetchTrainers() {
-  return fetch('http://localhost:3000/trainers')
+  return fetch(TRAINERS_URL)
     .then(resp => resp.json())
     .then(trainers => {
       // allTrainers = trainers
       trainerContainer().innerHTML = trainers.map(t => {
         return renderTrainerCard(t)
-      }).join(''); //mapping over all trainers to their trainer card
-      trainers.map(t => {
-        const trainerContainer = document.querySelector(`[data-id="${t.id}"]`)
-        const pokemonsContainer = trainerContainer.querySelector('ul')
-        pokemonsContainer.innerHTML = t.pokemons.map(pokemon => {
-          return renderPokemon(pokemon)
-        }).join('');
-      })
+      }).join('');
+      // trainers.map(t => {
+      //   const trainerContainer = document.querySelector(`[data-id="${t.id}"]`)
+      //   const pokemonsContainer = trainerContainer.querySelector('ul')
+      //   pokemonsContainer.innerHTML = t.pokemons.map(pokemon => {
+      //     return renderPokemon(pokemon)
+      //   }).join('');
+      // })
     })
 }
 
@@ -71,7 +75,7 @@ function listenForReleasePokemon() {
     const pokemonId = parseInt(event.target.dataset.pokemonId)
 
     if (event.target.textContent == 'Release') {
-      fetch(`http://localhost:3000/pokemons/${pokemonId}`, {
+      fetch(`${POKEMONS_URL}/${pokemonId}`, {
         method: 'DELETE'
       }).then(resp => resp.json())
         .then(event.target.parentElement.remove())
